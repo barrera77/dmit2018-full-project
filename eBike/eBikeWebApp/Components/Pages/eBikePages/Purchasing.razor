@@ -1,0 +1,45 @@
+﻿@page "/purchasing";
+
+<PageTitle>Purchasing</PageTitle>
+<h3>Purchasing</h3>
+
+<div class="wrapper container border py">
+<header>
+    <section>
+        <div>
+                <InputSelect class="form-select form-control" @bind-Value="@vendor.VendorName">
+                <option value="0">Select Vendor ...</option>
+
+                @if(vendorsList.Count > 0)
+                {
+                    foreach(var vendor in vendorsList)
+                    {
+                        <option value="@vendor.VendorID">@vendor.VendorName</option>
+                    }
+                    
+                }
+            </InputSelect>            
+
+            <MudBlazor.MudButton StartIcon="bi bi-search"> Find Order</MudBlazor.MudButton>
+
+            <div>
+                    <label for="phone" class="form-label col-2">Phone:</label>
+                    <InputText class="form-control" type="text" id="phone" @bind-Value="vendor.Phone" />
+            </div>
+            <div>
+                    <label for="city" class="form-label col-2">City:</label>
+                    <InputText class="form-control" type="text" id="city" @bind-Value="vendor.City" />
+            </div>
+            <div>
+                    <label for="po-number class="form-label col-2">PO# </label>
+                    <InputText class="form-control" type="text" id="po-number"  @bind-Value="vendor.VendorName"/>
+
+            </div>
+
+                
+
+        </div>
+    </section>
+</header>
+<body></body>
+</div>

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eBikeSystem", "eBikeSystem\eBikeSystem.csproj", "{8316142D-2A06-47B7-96FB-59002251C2DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eBikeWebApp", "eBikeWebApp\eBikeWebApp.csproj", "{78D1E237-0CEC-46CD-823A-1C28D1E34827}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8316142D-2A06-47B7-96FB-59002251C2DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8316142D-2A06-47B7-96FB-59002251C2DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8316142D-2A06-47B7-96FB-59002251C2DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8316142D-2A06-47B7-96FB-59002251C2DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78D1E237-0CEC-46CD-823A-1C28D1E34827}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78D1E237-0CEC-46CD-823A-1C28D1E34827}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78D1E237-0CEC-46CD-823A-1C28D1E34827}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78D1E237-0CEC-46CD-823A-1C28D1E34827}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F429919E-5553-426B-81B4-5E34428A1A8C}
+	EndGlobalSection
+EndGlobal
