@@ -3,42 +3,69 @@
 <PageTitle>Purchasing</PageTitle>
 <h3>Purchasing</h3>
 
-<div class="wrapper container border py">
+@using MudBlazor;
+
+
+<div class="wrapper container border py-5">
 <header>
     <section>
-        <div>
+            <div class="header-section row-cols-3 justify-content-between">
                 <InputSelect class="form-select form-control" @bind-Value="@vendor.VendorName">
-                <option value="0">Select Vendor ...</option>
+                    <option value="0">Select Vendor ...</option>
 
-                @if(vendorsList.Count > 0)
-                {
-                    foreach(var vendor in vendorsList)
+                    @if (vendorsList.Count > 0)
                     {
-                        <option value="@vendor.VendorID">@vendor.VendorName</option>
+                        foreach (var vendor in vendorsList)
+                        {
+                            <option value="@vendor.VendorID">@vendor.VendorName</option>
+                        }
+
                     }
-                    
-                }
-            </InputSelect>            
+                </InputSelect>
+                <div class="col-3">
+                    <MudBlazor.MudButton StartIcon="@Icons.Material.Filled.Search" IconSize="Size.Small"> Find Order</MudBlazor.MudButton>
 
-            <MudBlazor.MudButton StartIcon="bi bi-search"> Find Order</MudBlazor.MudButton>
+                </div>
 
-            <div>
-                    <label for="phone" class="form-label col-2">Phone:</label>
-                    <InputText class="form-control" type="text" id="phone" @bind-Value="vendor.Phone" />
+
+                <div class="d-flex align-items-center">
+                    <div class="row-cols-2 d-flex">
+                        <label for="phone" class="form-label col-4">Phone:</label>
+                        <InputText class="form-control" type="text" id="phone" @bind-Value="vendor.Phone" />
+                    </div>
+                    <div class="row-cols-2 d-flex">
+                        <label for="city" class="form-label col-4">City:</label>
+                        <InputText class="form-control" type="text" id="city" @bind-Value="vendor.City" />
+                    </div>
+                    <div class="row-cols-2 d-flex">
+                        <label for="po-number" class="form-label col-4">PO# </label>
+                        <InputText class="form-control" type="text" id="po-number" @bind-Value="vendor.VendorName" />
+                    </div>
+                </div>
             </div>
-            <div>
-                    <label for="city" class="form-label col-2">City:</label>
-                    <InputText class="form-control" type="text" id="city" @bind-Value="vendor.City" />
+
+            <div class="header-section w-75 m-auto d-flex justify-content-between">
+                <MudBlazor.MudButton Class="btn btn-primary" Style="width: 200px">New Order</MudBlazor.MudButton>
+                <MudBlazor.MudButton Class="btn btn-success" Style="width: 200px">Place Order</MudBlazor.MudButton>
+                <MudBlazor.MudButton Class="btn btn-danger" Style="width: 200px">Delete Order</MudBlazor.MudButton>
+                <MudBlazor.MudButton Class="btn btn-dark" Style="width: 200px">Clear</MudBlazor.MudButton>
             </div>
-            <div>
-                    <label for="po-number class="form-label col-2">PO# </label>
-                    <InputText class="form-control" type="text" id="po-number"  @bind-Value="vendor.VendorName"/>
-
+            
+            <div class="header-section row-cols-3 d-flex w-50 m-auto align-items-center">
+                <div class="row-cols-2 d-flex">
+                    <label for="subtotal" class="form-label col-4">Subtotal</label>
+                    <InputNumber class="form-control border-0" type="text" id="subtotal" @bind-Value="vendor.VendorId" />
+                </div>
+                <div class="row-cols-2 d-flex p-0">
+                    <label for="gst" class="form-label col-4">GST </label>
+                    <InputNumber class="form-control border-0" type="text" id="gst" @bind-Value="vendor.VendorId" />
+                </div>
+                <div class="row-cols-2 d-flex">
+                    <label for="total" class="form-label col-4">Total </label>
+                    <InputNumber class="form-control border-0" type="text" id="total" @bind-Value="vendor.VendorId" />
+                </div>
             </div>
-
-                
-
-        </div>
+        
     </section>
 </header>
 <body></body>

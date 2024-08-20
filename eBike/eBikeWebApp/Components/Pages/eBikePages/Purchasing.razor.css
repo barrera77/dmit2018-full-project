@@ -1,0 +1,11 @@
+﻿::deep .form-control {
+    max-width: 50%;
+}
+
+label {
+  padding-top: .5rem;
+}
+
+.header-section {
+    padding-bottom: 2rem;
+}
