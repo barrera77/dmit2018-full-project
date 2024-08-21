@@ -22,7 +22,7 @@ namespace eBikeSystem.BLL.Purchasing
 
         #region Query Service Methods
 
-        public List<VendorView> getVendors()
+        public List<VendorView> GetVendors()
         {
             return _context.Vendors
                     .Select(v => new VendorView
@@ -35,7 +35,7 @@ namespace eBikeSystem.BLL.Purchasing
                     .ToList();
         }
 
-        public PurchaseOrderView getPurchaseOrder(int vendorID) 
+        public PurchaseOrderView GetPurchaseOrder(int vendorID) 
         {
             PurchaseOrder? existingPO = _context.PurchaseOrders
                                         .FirstOrDefault(po => po.VendorId == vendorID && po.OrderDate == null);
@@ -49,7 +49,7 @@ namespace eBikeSystem.BLL.Purchasing
                     PurchaseOrderID = po.PurchaseOrderId,
                     PurchaseOrderNumber = po.PurchaseOrderNumber,
                     VendorID = po.VendorId,
-                    SubTotal = Math.Round(po.SubTotal, 2),
+                    SubTotal = po.SubTotal,
                     GST = po.TaxAmount,
                     EmployeeID = po.EmployeeId,
                     PurchaseOrderDetails = _context.PurchaseOrderDetails
@@ -74,7 +74,7 @@ namespace eBikeSystem.BLL.Purchasing
             {
                 VendorID = vendorID,
                 PurchaseOrderDetails = _context.PurchaseOrderDetails
-                                        .Where(pod => pod.Part.ReorderLevel == (pod.Part.ReorderLevel-(pod.Part.QuantityOnHand - pod.Quantity)))
+                                        .Where(pod => pod.Part.ReorderLevel == (pod.Part.ReorderLevel-(pod.Part.QuantityOnHand + pod.Quantity)))
                                         .Select(pod => new PurchaseOrderDetailView
                                         {
                                             PurchaseOrderDetailID = pod.PurchaseOrderId,
@@ -90,13 +90,6 @@ namespace eBikeSystem.BLL.Purchasing
             };
 
             return newPO;
-
-
-
-
-
-
-
         }
 
         public List<ItemView> GetInventory(int vendorID)

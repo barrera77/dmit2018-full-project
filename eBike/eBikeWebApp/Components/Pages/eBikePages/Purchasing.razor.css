@@ -1,5 +1,54 @@
-﻿::deep .form-control {
-    max-width: 50%;
+﻿body section {
+    padding-bottom: 4rem;
+}
+
+/*Table styles*/
+::deep tr:nth-child(even) {
+    background: rgba(255,255,255,0.4);
+}
+
+::deep tbody tr {
+    height: 3.5rem;
+}
+
+::deep table {
+    width: 100%;
+}
+
+.sales-table-col {
+    text-align: center;
+}
+
+::deep thead th, thead td {
+    border-bottom-width: 2px;
+}
+
+.page-size-chooser {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+    .page-size-chooser select {
+        margin: 0 1rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+::deep .quickgrid-row-divider tbody tr {
+    border: 1px solid #dee2e6;
+    border-left: none;
+    border-right: none;
+}
+
+/*End table styles*/
+
+
+.wrapper {
+    padding: 1rem;
+}
+
+::deep .form-control {
+    max-width: 70%;
 }
 
 label {
@@ -9,3 +58,39 @@ label {
 .header-section {
     padding-bottom: 2rem;
 }
+
+.btn-find-order svg {
+    margin-right: 1rem;
+    
+}
+
+.section-functions ::deep button {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-radius: 15px;
+}
+
+.totals-section ::deep input {
+    width: 60%;
+    background-color: white;
+}
+
+::deep .btn-remove, 
+::deep .btn-update {
+    border: none;
+    padding: 0.5rem;
+    background-color: transparent;
+}
+
+.btn-remove svg, 
+.btn-update svg {
+    width: 25px;
+    height: 25px;
+}
+
+::deep .btn-remove:hover,
+::deep .btn-update:hover {
+    color: red;
+}
+
+

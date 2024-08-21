@@ -1,19 +1,24 @@
 ﻿@page "/purchasing";
+@rendermode InteractiveServer
 
 <PageTitle>Purchasing</PageTitle>
 <h3>Purchasing</h3>
 
-@using MudBlazor;
+@using Microsoft.AspNetCore.Components.QuickGrid;
+
 
 
 <div class="wrapper container border py-5">
 <header>
-    <section>
-            <div class="header-section row-cols-3 justify-content-between">
-                <InputSelect class="form-select form-control" @bind-Value="@vendor.VendorName">
-                    <option value="0">Select Vendor ...</option>
+    
+</header>
+<body>
+        <section style="padding-bottom: 1rem;">
+            <div class="header-section d-flex justify-content-between" >
+                <select class="form-select form-control w-25" id="vendor" @onchange="OnHandleSelectedVendor">
+                    <option selected value="0">Select Vendor ...</option>
 
-                    @if (vendorsList.Count > 0)
+                    @if (vendorsList != null)
                     {
                         foreach (var vendor in vendorsList)
                         {
@@ -21,52 +26,161 @@
                         }
 
                     }
-                </InputSelect>
-                <div class="col-3">
-                    <MudBlazor.MudButton StartIcon="@Icons.Material.Filled.Search" IconSize="Size.Small"> Find Order</MudBlazor.MudButton>
+                </select>
+
+                <div class="col-2 d-flex justify-content-center">
+                    <MudBlazor.MudButton Class="btn btn-find-order" @onclick="(() => DisplayPODetails(VendorId))">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                        </svg> Find Order
+                    </MudBlazor.MudButton>
 
                 </div>
 
 
                 <div class="d-flex align-items-center">
                     <div class="row-cols-2 d-flex">
-                        <label for="phone" class="form-label col-4">Phone:</label>
-                        <InputText class="form-control" type="text" id="phone" @bind-Value="vendor.Phone" />
+                        <label for="phone" class="form-label col-3"><strong>Phone:</strong></label>
+                        <InputText class="form-control border-0 bg-white" disabled type="text" id="phone" @bind-Value="SelectedVendor.HomePhone" />
                     </div>
                     <div class="row-cols-2 d-flex">
-                        <label for="city" class="form-label col-4">City:</label>
-                        <InputText class="form-control" type="text" id="city" @bind-Value="vendor.City" />
+                        <label for="city" class="form-label col-2"><strong>City:</strong></label>
+                        <InputText class="form-control border-0 bg-white" disabled type="text" id="city" @bind-Value="SelectedVendor.City" />
                     </div>
                     <div class="row-cols-2 d-flex">
-                        <label for="po-number" class="form-label col-4">PO# </label>
-                        <InputText class="form-control" type="text" id="po-number" @bind-Value="vendor.VendorName" />
+                        <label for="po-number" class="form-label col-3"><strong>PO#</strong></label>
+                        <InputText class="form-control border-0 bg-white" disabled type="text" id="po-number" @bind-Value="PurchaseorderId" />
                     </div>
                 </div>
             </div>
 
-            <div class="header-section w-75 m-auto d-flex justify-content-between">
-                <MudBlazor.MudButton Class="btn btn-primary" Style="width: 200px">New Order</MudBlazor.MudButton>
-                <MudBlazor.MudButton Class="btn btn-success" Style="width: 200px">Place Order</MudBlazor.MudButton>
+            <div class="header-section section-functions w-75 m-auto d-flex justify-content-between">
+                <MudBlazor.MudButton Class="btn btn-primary" Style="width: 200px; ">@((isNewOrder ? "New Order": "Save"))</MudBlazor.MudButton>
+                <MudBlazor.MudButton Class="btn btn-success" Style="width: 200px ">Place Order</MudBlazor.MudButton>
                 <MudBlazor.MudButton Class="btn btn-danger" Style="width: 200px">Delete Order</MudBlazor.MudButton>
                 <MudBlazor.MudButton Class="btn btn-dark" Style="width: 200px">Clear</MudBlazor.MudButton>
             </div>
-            
-            <div class="header-section row-cols-3 d-flex w-50 m-auto align-items-center">
+
+            <div class="header-section totals-section row-cols-3 d-flex w-50 m-auto align-items-center">
                 <div class="row-cols-2 d-flex">
-                    <label for="subtotal" class="form-label col-4">Subtotal</label>
-                    <InputNumber class="form-control border-0" type="text" id="subtotal" @bind-Value="vendor.VendorId" />
+                    <label for="subtotal" class="form-label col-4"><strong>Subtotal</strong></label>
+                    <InputNumber class="form-control border-0" disabled id="subtotal" @bind-Value="poSubtotal" />
                 </div>
                 <div class="row-cols-2 d-flex p-0">
-                    <label for="gst" class="form-label col-4">GST </label>
-                    <InputNumber class="form-control border-0" type="text" id="gst" @bind-Value="vendor.VendorId" />
+                    <label for="gst" class="form-label col-2"><strong>GST</strong></label>
+                    <InputNumber class="form-control border-0" disabled id="gst" @bind-Value="poGST" />
                 </div>
                 <div class="row-cols-2 d-flex">
-                    <label for="total" class="form-label col-4">Total </label>
-                    <InputNumber class="form-control border-0" type="text" id="total" @bind-Value="vendor.VendorId" />
+                    <label for="total" class="form-label col-3"><strong>Total</strong></label>
+                    <InputNumber class="form-control border-0" disabled id="total" @bind-Value="poTotal" />
                 </div>
             </div>
-        
+        </section>
+    <section>
+        <h3>PO Details</h3>
+
+            @if (purchaseOrderDetailsList == null || purchaseOrderDetailsList.Count <= 0)
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Description</th>
+                            <th>Qty on Hand</th>
+                            <th>Re-Order level</th>
+                            <th>Qty on Order</th>
+                            <th>Qty to Order</th>
+                            <th>Price ($)</th>
+                            
+                        </tr>
+                    </thead>
+                </table>
+            }
+            else
+            {
+                <div>
+                    <QuickGrid Items="purchaseOrderDetailsList.AsQueryable()" Class="quickgrid-row-divider">
+                        <TemplateColumn>
+                            <MudBlazor.MudButton Class="btn-remove btn-outline-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+                                </svg>
+                            </MudBlazor.MudButton>
+                        </TemplateColumn>
+                        <PropertyColumn Title="ID" Property="@(pd => pd.PurchaseOrderDetailID)" />
+                        <PropertyColumn Title="Description" Property="@(pd => pd.Description)" />
+                        <PropertyColumn Title="Qty on Hand" Property="@(pd => pd.QOH)" />
+                        <PropertyColumn Title="Re-Order level" Property="@(pd => pd.ROL)" />
+                        <PropertyColumn Title="Qty on Order" Property="@(pd => pd.QOO)" />
+                        <TemplateColumn Title="Qty to Order">
+                            <InputNumber @bind-Value="context.QTO" class="w-50" />
+                            </TemplateColumn>
+                        <TemplateColumn Title="Price ($)">
+                            <InputNumber @bind-Value="context.Price" class="w-50"/>
+                            </TemplateColumn>
+                        <TemplateColumn>
+                            <MudBlazor.MudButton Class="btn-outline-primary btn-update">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                                    <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9" />
+                                    <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z" />
+                                </svg>
+                            </MudBlazor.MudButton>
+                        </TemplateColumn>
+                    </QuickGrid>
+                </div>
+             
+                    
+                    
+              
+            }
+
+
+        </section>
+       
+
+    <section>
+        <h3>Vendor Inventory</h3>
+
+            @if (purchaseOrderDetailsList == null || purchaseOrderDetailsList.Count <= 0)
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Description</th>
+                            <th>Qty on Hand</th>
+                            <th>Re-Order level</th>
+                            <th>Qty on Order</th>
+                            <th>Buffer</th>
+                            <th>Price ($)</th>                           
+                        </tr>
+                    </thead>
+                </table>
+            }
     </section>
-</header>
-<body></body>
+</body>
+
+    <footer>
+        @if (hasFeedback)
+        {
+            <div class="alert alert-info fw-bold">@feedbackMessage</div>
+        }
+
+        @if (hasError)
+        {
+            <div class="alert alert-danger ">
+
+                @errorMessage
+                <ul>
+                    @foreach (string detail in errorDetails)
+                    {
+                        <li>@detail</li>
+                    }
+                </ul>
+
+            </div>
+
+        }
+    </footer>
 </div>
