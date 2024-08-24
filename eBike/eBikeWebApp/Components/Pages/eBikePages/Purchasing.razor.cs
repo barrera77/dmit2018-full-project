@@ -2,8 +2,6 @@
 using eBikeSystem.Entities;
 using eBikeSystem.ModelViews.Purchasing;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
-using System.Security.Cryptography;
 using TakeHomeExercise4WebApp.Components;
 
 namespace eBikeWebApp.Components.Pages.eBikePages
@@ -25,19 +23,24 @@ namespace eBikeWebApp.Components.Pages.eBikePages
         public int VendorId { get; set; }
 
         [Parameter]
-        public string PurchaseorderId { get; set; }
+        public string PoNumber { get; set; }
 
         private decimal poSubtotal { get; set; }
         private decimal poGST { get; set; }
         private decimal poTotal { get; set; }
+        private decimal itemPrice { get; set; }
         private bool isNewOrder { get; set; }
 
 
         public List<VendorView> vendorsList { get; set; } = new List<VendorView>();
         public VendorView SelectedVendor { get; set; } = new VendorView();
 
-        public PurchaseOrderView? PurchaseOrder { get; set; } =  new PurchaseOrderView();    
+        public PurchaseOrderView? PurchaseOrder { get; set; } =  new PurchaseOrderView();   
+        
+        public PurchaseOrderDetail PoDetail { get; set; } = new PurchaseOrderDetail();
         public List<PurchaseOrderDetailView> purchaseOrderDetailsList { get; set; } = new List<PurchaseOrderDetailView>();  
+
+        public List<ItemView> ItemsList { get; set; } = new List<ItemView>();
 
         #endregion
 
@@ -88,11 +91,16 @@ namespace eBikeWebApp.Components.Pages.eBikePages
         private async Task OnHandleSelectedVendor(ChangeEventArgs e)
         {
             VendorId = Convert.ToInt32(e.Value);
+            ItemsList.Clear();
+            purchaseOrderDetailsList.Clear();
+
+
 
            if (VendorId > 0)
             {
                 try
                 {
+                    //Display vendor info
                     SelectedVendor = vendorsList.FirstOrDefault(v => v.VendorID == VendorId);                   
                 }
                 catch (AggregateException ex)
@@ -120,7 +128,6 @@ namespace eBikeWebApp.Components.Pages.eBikePages
             {
                 SelectedVendor = new VendorView();
             }
-
         }
 
         private void DisplayPODetails(int vendorId)
@@ -128,8 +135,10 @@ namespace eBikeWebApp.Components.Pages.eBikePages
             poGST = 0;
             poSubtotal = 0; 
             poTotal = 0;
+            itemPrice = 0;
             PurchaseOrder = null;
             purchaseOrderDetailsList.Clear();
+            ItemsList.Clear();
 
 
             if (vendorId > 0)
@@ -137,24 +146,36 @@ namespace eBikeWebApp.Components.Pages.eBikePages
                 try
                 {
                     PurchaseOrder = PurchasingServices.GetPurchaseOrder(vendorId);
+                    ItemsList = PurchasingServices.GetInventory(vendorId);
+
+                    foreach (var item in ItemsList)
+                    {
+                        item.Price = Math.Round(item.Price, 2);
+                    }
 
                     //Update totals
                     poSubtotal = Math.Round(PurchaseOrder.SubTotal, 2);
                     poGST = Math.Round(PurchaseOrder.GST, 2);
                     poTotal = Math.Round((poSubtotal + poGST), 2);
+                    
 
                     //get the PO details
                     purchaseOrderDetailsList = PurchaseOrder.PurchaseOrderDetails;
-
                     if (PurchaseOrder.PurchaseOrderID <= 0)
                     {
-                        PurchaseorderId = "New Order";
+                        PoNumber = "New Order";
                         isNewOrder = true;
                     }
                     else
                     {
-                        PurchaseorderId = PurchaseOrder.PurchaseOrderID.ToString();
+                        
+                        PoNumber = PurchaseOrder.PurchaseOrderNumber.ToString();
                         isNewOrder = false;
+
+                        foreach(var detail in purchaseOrderDetailsList)
+                        {
+                            detail.Price = Math.Round(detail.Price, 2); 
+                        }                        
                     }
                 }
                 catch (AggregateException ex)
@@ -177,29 +198,51 @@ namespace eBikeWebApp.Components.Pages.eBikePages
                 {
                     errorMessage = BlazorHelperClass.GetInnerException(ex).Message;
                 }
-            }
-            //else
-            //{
-            //    PurchaseOrder = new PurchaseOrderView();
-            //}
-
+            }            
         }
 
         
         private void RemovePurchaseOrderDetail(int partId)
         {
+            if(partId > 0)
+            {
+                PurchaseOrderDetailView partToRemove = purchaseOrderDetailsList.FirstOrDefault(p => p.PartID == partId);
 
+                if (partToRemove != null)
+                {
+                    //Remove part from PO
+                    purchaseOrderDetailsList.Remove(partToRemove);
+
+                    ItemView ItemToAdd = new ItemView
+                    {
+                        PartID = partToRemove.PartID,
+                        Description = partToRemove.Description,
+                        QOH = partToRemove.QOH,
+                        ROL = partToRemove.ROL,
+                        QOO = partToRemove.QOO,
+                        Buffer = (partToRemove.ROL - (partToRemove.QOH - partToRemove.QOO)) >= 0 ? 0 : (partToRemove.ROL - (partToRemove.QOH - partToRemove.QOO)),
+                        Price = partToRemove.Price,
+                    };
+
+                    //Return part to vendor inventory
+                    ItemsList.Add(ItemToAdd);
+                    StateHasChanged();
+                }
+
+                else
+                {
+                    errorMessage = "Part not found";
+                }
+                
+
+
+            }
         }
 
 
         private void AddPart(int partId)
         {
-            PurchaseOrderDetailView partToAdd = purchaseOrderDetailsList.FirstOrDefault(p => p.PartID == partId);
             
-            if(partToAdd != null)
-            {
-                purchaseOrderDetailsList.Add(partToAdd);
-            }
 
         }
 

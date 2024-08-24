@@ -94,7 +94,19 @@ namespace eBikeSystem.BLL.Purchasing
 
         public List<ItemView> GetInventory(int vendorID)
         {
-            return new List<ItemView> ();
+            return _context.Parts
+                    .Where(p => p.VendorId == vendorID && p.PartId != p.PurchaseOrderDetails.Where(pd => pd.PurchaseOrder.OrderDate == null).Select(pod => pod.PartId).FirstOrDefault())
+                    .Select(part => new ItemView
+                    {
+                        PartID = part.PartId,
+                        Description = part.Description,
+                        QOH = part.QuantityOnHand,
+                        ROL = part.ReorderLevel,
+                        QOO = part.QuantityOnOrder,
+                        Buffer = (part.ReorderLevel - (part.QuantityOnHand - part.QuantityOnOrder)) >= 0 ? 0 : (part.ReorderLevel - (part.QuantityOnHand - part.QuantityOnOrder)) * -1,
+                        Price = part.PurchasePrice,
+                    })
+                    .ToList();            
         }
 
         #endregion
