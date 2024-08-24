@@ -88,13 +88,16 @@ namespace eBikeWebApp.Components.Pages.eBikePages
             }
         }
 
+        /// <summary>
+        /// displayes the Phone and City for the selected vendor
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
         private async Task OnHandleSelectedVendor(ChangeEventArgs e)
         {
             VendorId = Convert.ToInt32(e.Value);
             ItemsList.Clear();
             purchaseOrderDetailsList.Clear();
-
-
 
            if (VendorId > 0)
             {
@@ -130,6 +133,10 @@ namespace eBikeWebApp.Components.Pages.eBikePages
             }
         }
 
+        /// <summary>
+        /// Display de PO details and get the vendor current inventory
+        /// </summary>
+        /// <param name="vendorId"></param>
         private void DisplayPODetails(int vendorId)
         {
             poGST = 0;
@@ -202,10 +209,15 @@ namespace eBikeWebApp.Components.Pages.eBikePages
         }
 
         
+        /// <summary>
+        /// Remove an item (detail line) from the current PO details and send it to the vendor inventory
+        /// </summary>
+        /// <param name="partId"></param>
         private void RemovePurchaseOrderDetail(int partId)
         {
             if(partId > 0)
             {
+                //Verify that the part exists
                 PurchaseOrderDetailView partToRemove = purchaseOrderDetailsList.FirstOrDefault(p => p.PartID == partId);
 
                 if (partToRemove != null)
@@ -213,6 +225,7 @@ namespace eBikeWebApp.Components.Pages.eBikePages
                     //Remove part from PO
                     purchaseOrderDetailsList.Remove(partToRemove);
 
+                    //Create the item object
                     ItemView ItemToAdd = new ItemView
                     {
                         PartID = partToRemove.PartID,
@@ -232,17 +245,51 @@ namespace eBikeWebApp.Components.Pages.eBikePages
                 else
                 {
                     errorMessage = "Part not found";
-                }
-                
-
-
+                }   
             }
         }
 
 
+        /// <summary>
+        /// add a part fom the vendor inventory to the PO details list
+        /// </summary>
+        /// <param name="partId"></param>
         private void AddPart(int partId)
         {
-            
+            if(partId > 0)
+            {
+                //Verify that the part exists
+                ItemView partToRemove = ItemsList.FirstOrDefault(i => i.PartID == partId);
+
+
+                if(partToRemove != null)
+                {
+                    //Remove the part from the items list
+                    ItemsList.Remove(partToRemove);
+
+                    //Create a new PO detail object
+                    PurchaseOrderDetailView poDetailToAdd = new PurchaseOrderDetailView
+                    {
+                        PartID = partToRemove.PartID,
+                        Description = partToRemove.Description,
+                        QOH = partToRemove.QOH,
+                        ROL = partToRemove.ROL,
+                        QOO = partToRemove.QOO,
+                        QTO = 0,
+                        Price = partToRemove.Price,
+                    };
+
+                    //Add the new POdetail to the list
+
+                    purchaseOrderDetailsList.Add(poDetailToAdd);
+                    StateHasChanged();
+                }
+
+                else
+                {
+                    errorMessage = "Part not found";
+                }
+            }           
 
         }
 
