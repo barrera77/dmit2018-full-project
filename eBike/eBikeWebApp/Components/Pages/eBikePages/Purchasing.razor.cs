@@ -3,6 +3,9 @@ using eBikeSystem.Entities;
 using eBikeSystem.ModelViews.Purchasing;
 using Microsoft.AspNetCore.Components;
 using TakeHomeExercise4WebApp.Components;
+using BlazorDialog;
+using MudBlazor;
+using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace eBikeWebApp.Components.Pages.eBikePages
 {
@@ -10,6 +13,15 @@ namespace eBikeWebApp.Components.Pages.eBikePages
     {
 
         #region Properties & Fields
+
+        [Inject]
+        private ILogger<Purchasing> Logger { get; set; }
+
+        [Inject]
+        protected IDialogService DialogService { get; set; }
+
+        [Inject]
+        protected IBlazorDialogService BlazorDialogService { get; set; }
 
         [Inject]
         private NavigationManager _navManager { get; set; }
@@ -29,6 +41,7 @@ namespace eBikeWebApp.Components.Pages.eBikePages
         private decimal poGST { get; set; }
         private decimal poTotal { get; set; }
         private decimal itemPrice { get; set; }
+        private int qto { get; set; }
         private bool isNewOrder { get; set; }
 
 
@@ -165,7 +178,7 @@ namespace eBikeWebApp.Components.Pages.eBikePages
                     poGST = Math.Round(PurchaseOrder.GST, 2);
                     poTotal = Math.Round((poSubtotal + poGST), 2);
                     
-
+                    
                     //get the PO details
                     purchaseOrderDetailsList = PurchaseOrder.PurchaseOrderDetails;
                     if (PurchaseOrder.PurchaseOrderID <= 0)
@@ -181,7 +194,8 @@ namespace eBikeWebApp.Components.Pages.eBikePages
 
                         foreach(var detail in purchaseOrderDetailsList)
                         {
-                            detail.Price = Math.Round(detail.Price, 2); 
+                            detail.Price = Math.Round(detail.Price, 2);
+                            qto = detail.QTO;
                         }                        
                     }
                 }
@@ -215,7 +229,7 @@ namespace eBikeWebApp.Components.Pages.eBikePages
         /// <param name="partId"></param>
         private void RemovePurchaseOrderDetail(int partId)
         {
-            if(partId > 0)
+            if (partId > 0)
             {
                 //Verify that the part exists
                 PurchaseOrderDetailView partToRemove = purchaseOrderDetailsList.FirstOrDefault(p => p.PartID == partId);
@@ -239,6 +253,14 @@ namespace eBikeWebApp.Components.Pages.eBikePages
 
                     //Return part to vendor inventory
                     ItemsList.Add(ItemToAdd);
+
+                    //Update totals
+                    poSubtotal = Math.Round(poSubtotal - (partToRemove.Price * partToRemove.QTO), 2);
+                    poGST = Math.Round(poGST - ((partToRemove.Price * partToRemove.QTO) * 0.05m), 2);
+                    poTotal = Math.Round((poSubtotal + poGST), 2);
+
+                    Logger.LogInformation($"GST: {(partToRemove.Price * partToRemove.QTO) * 0.05m}");
+
                     StateHasChanged();
                 }
 
@@ -247,6 +269,7 @@ namespace eBikeWebApp.Components.Pages.eBikePages
                     errorMessage = "Part not found";
                 }   
             }
+           
         }
 
 
@@ -255,8 +278,9 @@ namespace eBikeWebApp.Components.Pages.eBikePages
         /// </summary>
         /// <param name="partId"></param>
         private void AddPart(int partId)
-        {
-            if(partId > 0)
+        {           
+
+            if (partId > 0)
             {
                 //Verify that the part exists
                 ItemView partToRemove = ItemsList.FirstOrDefault(i => i.PartID == partId);
@@ -277,11 +301,12 @@ namespace eBikeWebApp.Components.Pages.eBikePages
                         QOO = partToRemove.QOO,
                         QTO = 0,
                         Price = partToRemove.Price,
+                        
                     };
 
                     //Add the new POdetail to the list
+                    purchaseOrderDetailsList.Add(poDetailToAdd);                  
 
-                    purchaseOrderDetailsList.Add(poDetailToAdd);
                     StateHasChanged();
                 }
 
@@ -296,8 +321,25 @@ namespace eBikeWebApp.Components.Pages.eBikePages
         /// <summary>
         /// Updates the subtotal and tax values
         /// </summary>
-        private void Refresh()
+        private void Refresh(int partId)
         {
+            // Find the part that needs to be refreshed
+            PurchaseOrderDetailView partToRefresh = purchaseOrderDetailsList.FirstOrDefault(i => i.PartID == partId);
+
+            if (partToRefresh.QTO >= 0)
+            {               
+               
+                // Update totals 
+                poSubtotal = Math.Round(purchaseOrderDetailsList.Sum(pod => pod.QTO * pod.Price), 2);
+                poGST = Math.Round((poSubtotal * 0.05m), 2);
+                poTotal = Math.Round((poSubtotal + poGST), 2);                
+             
+                StateHasChanged();               
+            }
+            else
+            {
+                errorMessage = "Please enter a valid quantity";
+            }
 
         }
 
@@ -308,6 +350,30 @@ namespace eBikeWebApp.Components.Pages.eBikePages
         {
             
 
+        }
+    
+
+        private async Task OnDeleteCurrentPO(int purchaseOrderId)
+        {
+            string bodyText = "Are you sure you want to delete the current PO? It will be permanently deleted from the DB.";
+
+            string dialogResult =
+               await BlazorDialogService.ShowComponentAsDialog<string>(
+                   new ComponentAsDialogOptions(typeof(SimpleComponentDialog))
+                   {
+                       Size = DialogSize.Normal,
+                       Parameters = new()
+                       {
+                            { nameof(SimpleComponentDialog.Input), "Delete PO" },
+                            { nameof(SimpleComponentDialog.BodyText), bodyText }
+                       }
+                   });
+
+            if (dialogResult == "Ok")
+            {
+                PurchasingServices.DeleteOrder(purchaseOrderId);
+                await InvokeAsync(StateHasChanged);
+            }            
         }
     }
 }
