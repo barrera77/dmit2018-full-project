@@ -53,7 +53,7 @@
             </div>
 
             <div class="header-section section-functions w-75 m-auto d-flex justify-content-between">
-                <MudBlazor.MudButton Class="btn btn-primary" Style="width: 200px; ">@((isNewOrder ? "New Order": "Save"))</MudBlazor.MudButton>
+                <MudBlazor.MudButton Class="btn btn-primary" Style="width: 200px; " @onclick="@(() => OnAddPO())">@((isNewOrder ? "New Order" : "Save"))</MudBlazor.MudButton>
                 <MudBlazor.MudButton Class="btn btn-success" Style="width: 200px ">Place Order</MudBlazor.MudButton>
                 <MudBlazor.MudButton Class="btn btn-danger" Style="width: 200px">Delete Order</MudBlazor.MudButton>
                 <MudBlazor.MudButton Class="btn btn-dark" Style="width: 200px">Clear</MudBlazor.MudButton>

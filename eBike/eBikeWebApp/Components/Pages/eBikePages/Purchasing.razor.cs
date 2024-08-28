@@ -6,6 +6,7 @@ using TakeHomeExercise4WebApp.Components;
 using BlazorDialog;
 using MudBlazor;
 using Microsoft.AspNetCore.Components.QuickGrid;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace eBikeWebApp.Components.Pages.eBikePages
 {
@@ -48,7 +49,7 @@ namespace eBikeWebApp.Components.Pages.eBikePages
         public List<VendorView> vendorsList { get; set; } = new List<VendorView>();
         public VendorView SelectedVendor { get; set; } = new VendorView();
 
-        public PurchaseOrderView? PurchaseOrder { get; set; } =  new PurchaseOrderView();   
+        public PurchaseOrderView? NewPurchaseOrder { get; set; } =  new PurchaseOrderView();   
         
         public PurchaseOrderDetail PoDetail { get; set; } = new PurchaseOrderDetail();
         public List<PurchaseOrderDetailView> purchaseOrderDetailsList { get; set; } = new List<PurchaseOrderDetailView>();  
@@ -156,7 +157,7 @@ namespace eBikeWebApp.Components.Pages.eBikePages
             poSubtotal = 0; 
             poTotal = 0;
             itemPrice = 0;
-            PurchaseOrder = null;
+            NewPurchaseOrder = null;
             purchaseOrderDetailsList.Clear();
             ItemsList.Clear();
 
@@ -165,7 +166,7 @@ namespace eBikeWebApp.Components.Pages.eBikePages
             {
                 try
                 {
-                    PurchaseOrder = PurchasingServices.GetPurchaseOrder(vendorId);
+                    NewPurchaseOrder = PurchasingServices.GetPurchaseOrder(vendorId);
                     ItemsList = PurchasingServices.GetInventory(vendorId);
 
                     foreach (var item in ItemsList)
@@ -174,14 +175,14 @@ namespace eBikeWebApp.Components.Pages.eBikePages
                     }
 
                     //Update totals
-                    poSubtotal = Math.Round(PurchaseOrder.SubTotal, 2);
-                    poGST = Math.Round(PurchaseOrder.GST, 2);
+                    poSubtotal = Math.Round(NewPurchaseOrder.SubTotal, 2);
+                    poGST = Math.Round(NewPurchaseOrder.GST, 2);
                     poTotal = Math.Round((poSubtotal + poGST), 2);
                     
                     
                     //get the PO details
-                    purchaseOrderDetailsList = PurchaseOrder.PurchaseOrderDetails;
-                    if (PurchaseOrder.PurchaseOrderID <= 0)
+                    purchaseOrderDetailsList = NewPurchaseOrder.PurchaseOrderDetails;
+                    if (NewPurchaseOrder.PurchaseOrderID <= 0)
                     {
                         PoNumber = "New Order";
                         isNewOrder = true;
@@ -189,7 +190,7 @@ namespace eBikeWebApp.Components.Pages.eBikePages
                     else
                     {
                         
-                        PoNumber = PurchaseOrder.PurchaseOrderNumber.ToString();
+                        PoNumber = NewPurchaseOrder.PurchaseOrderNumber.ToString();
                         isNewOrder = false;
 
                         foreach(var detail in purchaseOrderDetailsList)
@@ -374,6 +375,49 @@ namespace eBikeWebApp.Components.Pages.eBikePages
                 PurchasingServices.DeleteOrder(purchaseOrderId);
                 await InvokeAsync(StateHasChanged);
             }            
+        }
+
+        public void OnAddPO()
+        {
+            errorDetails.Clear();
+            errorMessage = string.Empty;
+
+            //TODO: Add method not working, need to fix on both services and code behind
+
+            try
+            {
+                NewPurchaseOrder = new PurchaseOrderView()
+                {                    
+                    VendorID = VendorId,
+                    SubTotal = poSubtotal,
+                    GST = poGST,
+                    EmployeeID = 9,
+                    PurchaseOrderDetails = purchaseOrderDetailsList,
+                };
+
+                PurchasingServices.PurchaseOrder_Save(NewPurchaseOrder);
+
+            }
+            catch (AggregateException ex)
+            {
+                if (!string.IsNullOrWhiteSpace(errorMessage))
+                {
+                    errorMessage += Environment.NewLine;
+                }
+                errorMessage += "Vendor not found";
+                foreach (Exception error in ex.InnerExceptions)
+                {
+                    errorDetails.Add(error.Message);
+                }
+            }
+            catch (ArgumentNullException ex)
+            {
+                errorMessage = BlazorHelperClass.GetInnerException(ex).Message;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = BlazorHelperClass.GetInnerException(ex).Message;
+            }
         }
     }
 }

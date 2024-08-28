@@ -116,6 +116,11 @@ namespace eBikeSystem.BLL.Purchasing
         {
             PurchaseOrder poToAdd = _context.PurchaseOrders.FirstOrDefault(po => po.PurchaseOrderId == purchaseOrderView.PurchaseOrderID);
 
+            if (poToAdd == null)
+            {
+                throw new ArgumentException("Purchase order cannot be null");
+            }
+
             if (poToAdd.OrderDate != null)
             {
                 throw new ArgumentException("Purchase order already closed");
@@ -142,6 +147,9 @@ namespace eBikeSystem.BLL.Purchasing
                 throw new AggregateException("Please acheck error message(s):", errorList);
             }
 
+            //TODO: Add method not working, need to fix on both services and code behind
+
+
             int lastPoNumber = _context.PurchaseOrders.OrderByDescending(po => po.PurchaseOrderNumber)
                                                        .Select(po => po.PurchaseOrderNumber).FirstOrDefault();
             poToAdd = new PurchaseOrder()
@@ -163,7 +171,6 @@ namespace eBikeSystem.BLL.Purchasing
             }
            
             //Create the prchaseOrderDetails
-
             foreach(var poDetail in purchaseOrderView.PurchaseOrderDetails)
             {
                 if(purchaseOrderView.PurchaseOrderDetails.Count > 0)
@@ -185,15 +192,18 @@ namespace eBikeSystem.BLL.Purchasing
 
                     //TODO: Complete the Save method. Needs logic for saving or updating current/new PO
                 }
-
             }
 
+            if(errorList.Count > 0)
+            {
+                throw new AggregateException("Unable to save the PO.  Check errors:", errorList);
+            }
+            else
+            {
+                _context.PurchaseOrders.Add(poToAdd);
 
-
-
-
-
-
+                _context.SaveChanges();
+            }
         }
 
         public void DeleteOrder(int purchaseOrderID)
